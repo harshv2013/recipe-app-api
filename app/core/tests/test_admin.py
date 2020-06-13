@@ -22,6 +22,9 @@ class AdminSiteTests(TestCase):
     def test_users_listed(self):
         """Test that users are listed on the user page"""
         url = reverse('admin:core_user_changelist')
+        # refer how url works in djano admin docs in link given below
+        # https://docs.djangoproject.com/
+        # en/2.2/ref/contrib/admin/#reversing-admin-urls
         res = self.client.get(url)
 
         self.assertContains(res, self.user.name)
