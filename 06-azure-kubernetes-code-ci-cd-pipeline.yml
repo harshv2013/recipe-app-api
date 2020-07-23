@@ -5,7 +5,7 @@ resources:
 - repo: self
 
 variables:
-  tag: '$(Build.BuildId)'
+  tag: 68 #'$(Build.BuildId)'
 
 stages:
 - stage: Build
@@ -16,14 +16,14 @@ stages:
     pool:
       vmImage: 'ubuntu-latest'
     steps:
-    - task: Docker@2
-      displayName: Build an image
-      inputs:
-        containerRegistry: 'harsh2013-docker-hub'
-        repository: 'harsh2013/recipe-app-api'
-        command: 'buildAndPush'
-        Dockerfile: '**/Dockerfile'
-        tags: '$(tag)'
+    # - task: Docker@2
+    #   displayName: Build an image
+    #   inputs:
+    #     containerRegistry: 'harsh2013-docker-hub'
+    #     repository: 'harsh2013/recipe-app-api'
+    #     command: 'buildAndPush'
+    #     Dockerfile: '**/Dockerfile'
+    #     tags: '$(tag)'
 
 
     - task: CopyFiles@2
