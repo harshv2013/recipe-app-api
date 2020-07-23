@@ -61,5 +61,6 @@ stages:
         namespace: 'default'
         manifests: '$(System.ArtifactsDirectory)/configuration/kubernetes/deployment.yaml'
         containers: 'harsh2013/recipe-app-api:$(tag)'
+        rolloutStatusTimeout: '60'
 
 
