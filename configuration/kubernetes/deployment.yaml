@@ -1,71 +1,102 @@
-apiVersion: apps/v1  #extensions/v1beta1
-kind: Deployment
-metadata:
-  labels:
-    app: recipe-app-api
-  name: recipe-app-api
-  namespace: default
-spec:
-  replicas: 1 #CHANGE
-  minReadySeconds: 60
-  selector:
-    matchLabels:
-      app: recipe-app-api
-  strategy:
-    rollingUpdate:
-      maxSurge: 25%
-      maxUnavailable: 25%
-    type: RollingUpdate
-  template:
-    metadata:
-      labels:
-        app: recipe-app-api
-    spec:
-      containers:
-      - name: recipe-app-api
-        image: harsh2013/recipe-app-api
-        imagePullPolicy: IfNotPresent
-        ports:
-        - name: liveness-port
-          containerPort: 8000
-        resources: #CHANGE
-          requests:
-            cpu: 100m
-            memory: 512Mi
-          limits:
-            cpu: 500m
-            memory: 1024Mi #256Mi 
-        readinessProbe:
-          httpGet:
-            path: /
-            port: liveness-port
-          failureThreshold: 10
-          periodSeconds: 20
-          initialDelaySeconds: 60
-        livenessProbe:
-          httpGet:
-            path: /
-            port: liveness-port
-          failureThreshold: 10
-          periodSeconds: 20
-          initialDelaySeconds: 60
-      restartPolicy: Always
-      terminationGracePeriodSeconds: 30
----
-apiVersion: v1  #v1
-kind: Service
-metadata:
-  labels: #PODS
-    app: recipe-app-api
-  name: recipe-app-api
-  namespace: default
-spec:
-  ports:
-  - # nodePort: 30702 #CHANGE
-    port: 8000 #CHANGE
-    protocol: TCP
-    targetPort: 8000 #CHANGE
-  selector:
-    app: recipe-app-api
-  sessionAffinity: None #CHANGE
-  type: LoadBalancer
+#apiVersion: apps/v1  #extensions/v1beta1
+#kind: Deployment
+#metadata:
+#  labels:
+#    app: recipe-app-api
+#  name: recipe-app-api
+#  namespace: default
+#spec:
+#  replicas: 1 #CHANGE
+#  minReadySeconds: 60
+#  selector:
+#    matchLabels:
+#      app: recipe-app-api
+#  strategy:
+#    rollingUpdate:
+#      maxSurge: 25%
+#      maxUnavailable: 25%
+#    type: RollingUpdate
+#  template:
+#    metadata:
+#      labels:
+#        app: recipe-app-api
+#    spec:
+#      containers:
+#      - name: recipe-app-api
+#        image: harsh2013/recipe-app-api
+#        imagePullPolicy: IfNotPresent
+#        ports:
+#        - name: liveness-port
+#          containerPort: 8000
+#        resources: #CHANGE
+#          requests:
+#            cpu: 100m
+#            memory: 512Mi
+#          limits:
+#            cpu: 500m
+#            memory: 1024Mi #256Mi
+#        readinessProbe:
+#          httpGet:
+#            path: /
+#            port: liveness-port
+#          failureThreshold: 10
+#          periodSeconds: 20
+#          initialDelaySeconds: 60
+#        livenessProbe:
+#          httpGet:
+#            path: /
+#            port: liveness-port
+#          failureThreshold: 10
+#          periodSeconds: 20
+#          initialDelaySeconds: 60
+#      restartPolicy: Always
+#      terminationGracePeriodSeconds: 30
+#---
+#apiVersion: v1  #v1
+#kind: Service
+#metadata:
+#  labels: #PODS
+#    app: recipe-app-api
+#  name: recipe-app-api
+#  namespace: default
+#spec:
+#  ports:
+#  - # nodePort: 30702 #CHANGE
+#    port: 8000 #CHANGE
+#    protocol: TCP
+#    targetPort: 8000 #CHANGE
+#  selector:
+#    app: recipe-app-api
+#  sessionAffinity: None #CHANGE
+#  type: LoadBalancer
+
+
+version: "3"
+
+services:
+  app:
+    user: $UID:$GID
+    build:
+      context: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./app:/app
+    command: >
+      sh -c "python manage.py wait_for_db &&
+             python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8000"
+    environment:
+      - DB_HOST=db
+      - DB_NAME=app
+      - DB_USER=postgres
+      - DB_PASS=supersecretpassword
+    depends_on:
+      - db
+
+  db:
+    image: postgres:10-alpine
+    environment:
+      - POSTGRES_DB=app
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=supersecretpassword
