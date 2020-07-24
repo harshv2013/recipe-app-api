@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
       - name: recipe-app-api
-        image: harsh2013/recipe-app-api:69
+        image: harsh2013/recipe-app-api
         imagePullPolicy: IfNotPresent
         ports:
         - name: liveness-port
